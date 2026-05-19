@@ -242,10 +242,11 @@ def plot_lj_chart(hormone, df_h):
     fig.update_layout(
         title=dict(text=f"<b>Levey-Jennings Chart</b> — {hormone}", font=dict(size=16, color="#1a1a2e")),
         xaxis=dict(
-            title="Date of run",
-            ticktext= datetime.now().strftime("%Y-%m-%d"),
-            showgrid=True, gridcolor="#f1f5f9"
+            title="Run number",
+            tickvals=x,
+            ticktext=[f"#{i+1}" for i in x],
         ),
+        
         yaxis=dict(
             title=f"SST Value",
             showgrid=True, gridcolor="#f1f5f9"
