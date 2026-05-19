@@ -22,7 +22,7 @@ st.markdown("""
         .main-header {
             font-size: 48px;
             font-weight: 700;
-            color: #1f1f1f;
+            color: #ffffff;
             margin-bottom: 10px;
         }
         .subtitle {
@@ -41,16 +41,6 @@ st.markdown("""
 # Main header - removed icon, made more professional
 st.markdown('<div class="main-header">QC Charts</div>', unsafe_allow_html=True)
 
-# Subtitle - larger and more prominent
-st.markdown('<div class="subtitle">Making Quality Control Charts Easier</div>', unsafe_allow_html=True)
-
-# Description
-st.write(
-    "Streamline your quality control analysis with professional charting tools. "
-    "Get started by exploring our documentation at [docs.streamlit.io](https://docs.streamlit.io/)."
-)
-
-st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
 
 # Add your content sections below
 st.header("Features")
