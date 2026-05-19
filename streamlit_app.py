@@ -1,3 +1,5 @@
+#final personal version
+
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -65,7 +67,7 @@ HORMONE_LIMITS = {
     "Testosterone":                    {"mean": 8762589,  "sd": 1004209},
 }
 
-DATA_FILE = "qc_data.csv"
+DATA_FILE = "qc_data_personal.csv"
 
 # ── Custom CSS ─────────────────────────────────────────────────────────────────
 st.markdown("""
