@@ -10,7 +10,7 @@ from email.mime.multipart import MIMEMultipart
 
 # Page configuration
 st.set_page_config(
-    page_title="QC Charts",
+    page_title="QC Charts Made Easier",
     page_icon="",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -43,8 +43,8 @@ st.markdown('<div class="main-header">QC Charts</div>', unsafe_allow_html=True)
 
 
 # Add your content sections below
-st.header("Features")
-st.write("Your QC charting features will go here...")
+st.header("Sex Steroid Hormone Panel · Internal Quality Control System")
+st.write("More features to elaborate on it")
 
 # ── Hormone acceptance limits (mean, SD) ────────────────────────────────
 HORMONE_LIMITS = {
@@ -242,9 +242,8 @@ def plot_lj_chart(hormone, df_h):
     fig.update_layout(
         title=dict(text=f"<b>Levey-Jennings Chart</b> — {hormone}", font=dict(size=16, color="#1a1a2e")),
         xaxis=dict(
-            title="Run number",
-            tickvals=x,
-            ticktext=[f"#{i+1}" for i in x],
+            title="Date of run",
+            ticktext= datetime.now().strftime("%Y-%m-%d"),
             showgrid=True, gridcolor="#f1f5f9"
         ),
         yaxis=dict(
@@ -259,14 +258,6 @@ def plot_lj_chart(hormone, df_h):
         hovermode="x unified"
     )
     return fig
-
-
-# ═════════════════════════════════════════════════════════════════════════════
-#  PAGE HEADER
-# ═════════════════════════════════════════════════════════════════════════════
-st.markdown('<p class="main-title">📊 QC Charts Made Easier</p>', unsafe_allow_html=True)
-st.markdown('<p class="sub-title">Sex Steroid Hormone Panel · Internal Quality Control System</p>', unsafe_allow_html=True)
-st.divider()
 
 # ── Sidebar ────────────────────────────────────────────────────────────────────
 with st.sidebar:
