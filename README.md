@@ -21,7 +21,7 @@ The app will open in your browser at `http://localhost:8501`
 
 ## Features
 
-- **17 hormone panel** with pre-loaded ±2SD acceptance limits
+- **15 hormone panel** with pre-loaded ±2SD acceptance limits
 - **SST entry form** — initials, email, hormone selector, value input
 - **Auto QC check** — immediately checks if value is within ±2SD
 - **Levey-Jennings chart** — per hormone, updates with every new entry
@@ -47,25 +47,23 @@ The app will open in your browser at `http://localhost:8501`
 
 ## Hormones in the panel
 
-| # | Hormone | Unit |
-|---|---------|------|
-| 1 | Testosterone | nmol/L |
-| 2 | Free Testosterone | nmol/L |
-| 3 | Estradiol (E2) | pmol/L |
-| 4 | Estrone (E1) | pmol/L |
-| 5 | Estriol (E3) | nmol/L |
-| 6 | Progesterone | nmol/L |
-| 7 | DHEA | nmol/L |
-| 8 | DHEA-S | µmol/L |
-| 9 | Androstenedione | nmol/L |
-| 10 | DHT | nmol/L |
-| 11 | 17-OH Progesterone | nmol/L |
-| 12 | Cortisol | nmol/L |
-| 13 | Aldosterone | pmol/L |
-| 14 | SHBG | nmol/L |
-| 15 | FSH | IU/L |
-| 16 | LH | IU/L |
-| 17 | Prolactin | mIU/L |
+| # | Hormone |
+|---|---------|
+| 1 | 11-deoxycorticosterone |
+| 2 | 11-deoxycortisol |
+| 3 | 17-OHP |
+| 4 | 21-deoxycortisol |
+| 5 | Aldosterone |
+| 6 | Androstenedione |
+| 7 | Corticosterone |
+| 8 | Cortisol |
+| 9 | Cortisone |
+| 10 | Dexamethasone |
+| 11 | DHEA |
+| 12 | DHEA-S |
+| 13 | DHT |
+| 14 | Progesterone |
+| 15 | Testosterone |
 
 ---
 
