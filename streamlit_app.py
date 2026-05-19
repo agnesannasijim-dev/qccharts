@@ -8,11 +8,53 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
+# Page configuration
 st.set_page_config(
-    page_title="QC Charts Made Easier",
-    page_icon="📊",
-    layout="wide"
+    page_title="QC Charts",
+    page_icon="",
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
+
+# Custom CSS for professional styling
+st.markdown("""
+    <style>
+        .main-header {
+            font-size: 48px;
+            font-weight: 700;
+            color: #1f1f1f;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            font-size: 24px;
+            font-weight: 500;
+            color: #4a4a4a;
+            margin-bottom: 30px;
+        }
+        .section-divider {
+            margin: 40px 0;
+            border-top: 2px solid #e0e0e0;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+# Main header - removed icon, made more professional
+st.markdown('<div class="main-header">QC Charts</div>', unsafe_allow_html=True)
+
+# Subtitle - larger and more prominent
+st.markdown('<div class="subtitle">Making Quality Control Charts Easier</div>', unsafe_allow_html=True)
+
+# Description
+st.write(
+    "Streamline your quality control analysis with professional charting tools. "
+    "Get started by exploring our documentation at [docs.streamlit.io](https://docs.streamlit.io/)."
+)
+
+st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
+
+# Add your content sections below
+st.header("Features")
+st.write("Your QC charting features will go here...")
 
 # ── Hormone acceptance limits (mean, SD) ────────────────────────────────
 HORMONE_LIMITS = {
