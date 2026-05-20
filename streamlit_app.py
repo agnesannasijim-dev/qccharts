@@ -9,6 +9,9 @@ import os
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import pathlib
+import io
+import xlsxwriter
 
 # Page configuration
 st.set_page_config(
@@ -70,6 +73,8 @@ HORMONE_LIMITS = {
 import pathlib
 BASE_DIR = pathlib.Path(__file__).parent
 DATA_FILE = str(BASE_DIR / "qc_data_personal.csv")
+DESKTOP = pathlib.Path.home() / "Desktop"
+EXCEL_FILE = str(DESKTOP / "QC_Charts_Made_Easier.xlsx")
 
 # ── Custom CSS ─────────────────────────────────────────────────────────────────
 st.markdown("""
@@ -139,6 +144,8 @@ def save_entry(hormone, initials, email, sst_value, status):
     }
     df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
     df.to_csv(DATA_FILE, index=False)
+    export_excel_to_desktop(df)   # ← added: auto-update Excel on Desktop
+    return df                     # ← added: return updated df
 
 def check_limits(hormone, value):
     lim   = HORMONE_LIMITS[hormone]
@@ -148,6 +155,127 @@ def check_limits(hormone, value):
     lower = mean - 2 * sd
     status = "PASS" if lower <= value <= upper else "FAIL"
     return status, mean, sd, upper, lower
+
+def export_excel_to_desktop(df):
+    try:
+        workbook = xlsxwriter.Workbook(EXCEL_FILE)
+
+        hdr_fmt = workbook.add_format({
+            "bold": True, "bg_color": "#1a1a2e", "font_color": "white",
+            "border": 1, "align": "center", "valign": "vcenter", "font_size": 11
+        })
+        pass_fmt = workbook.add_format({
+            "bg_color": "#d4edda", "font_color": "#155724",
+            "bold": True, "border": 1, "align": "center"
+        })
+        fail_fmt = workbook.add_format({
+            "bg_color": "#f8d7da", "font_color": "#721c24",
+            "bold": True, "border": 1, "align": "center"
+        })
+        cell_fmt = workbook.add_format({"border": 1, "align": "center", "valign": "vcenter"})
+        date_fmt = workbook.add_format({"border": 1, "align": "center"})
+        title_fmt = workbook.add_format({"bold": True, "font_size": 14, "font_color": "#1a1a2e"})
+        sub_fmt   = workbook.add_format({"italic": True, "font_size": 10, "font_color": "#555555"})
+
+        # ── Sheet 1: Full data table ──
+        ws = workbook.add_worksheet("QC Data Table")
+        ws.set_zoom(90)
+        ws.merge_range("A1:G1", "QC Charts Made Easier — Full Data Table", title_fmt)
+        ws.write("A2", f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", sub_fmt)
+        ws.write("B2", f"Total records: {len(df)}", sub_fmt)
+
+        headers    = ["Hormone", "Initials", "Email", "Date & Time", "SST Value", "Status"]
+        col_widths = [28, 10, 28, 20, 14, 10]
+        for col, (h, w) in enumerate(zip(headers, col_widths)):
+            ws.write(3, col, h, hdr_fmt)
+            ws.set_column(col, col, w)
+        ws.set_row(3, 22)
+
+        df_sorted = df.sort_values("datetime", ascending=False).reset_index(drop=True)
+        for row_idx, row in df_sorted.iterrows():
+            r   = row_idx + 4
+            fmt = pass_fmt if row["status"] == "PASS" else fail_fmt
+            ws.write(r, 0, row["hormone"],              cell_fmt)
+            ws.write(r, 1, row["initials"],             cell_fmt)
+            ws.write(r, 2, row["email"],                cell_fmt)
+            ws.write(r, 3, str(row["datetime"])[:16],   date_fmt)
+            ws.write(r, 4, row["sst_value"],            cell_fmt)
+            ws.write(r, 5, row["status"],               fmt)
+            ws.set_row(r, 18)
+        ws.freeze_panes(4, 0)
+
+        # ── Sheet per hormone: mini table + L-J chart ──
+        hormones_with_data = [h for h in HORMONE_LIMITS if not df[df["hormone"] == h].empty]
+        for hormone in hormones_with_data:
+            df_h  = df[df["hormone"] == hormone].reset_index(drop=True)
+            lim   = HORMONE_LIMITS[hormone]
+            mean  = lim["mean"]
+            sd    = lim["sd"]
+            safe_name = hormone[:28].replace("/","_").replace("(","").replace(")","")
+
+            ws_c = workbook.add_worksheet(safe_name)
+            ws_c.set_zoom(90)
+            ws_c.merge_range("A1:F1", f"Levey-Jennings Chart — {hormone}", title_fmt)
+            ws_c.write("A2", f"Mean: {mean}  |  +2SD: {mean+2*sd:.2f}  |  -2SD: {mean-2*sd:.2f}", sub_fmt)
+
+            mini_headers = ["Run #", "Initials", "Date & Time", "SST Value", "Status"]
+            mini_widths  = [8, 10, 20, 14, 10]
+            for col, (h, w) in enumerate(zip(mini_headers, mini_widths)):
+                ws_c.write(3, col, h, hdr_fmt)
+                ws_c.set_column(col, col, w)
+
+            for row_idx, row in df_h.iterrows():
+                r   = row_idx + 4
+                fmt = pass_fmt if row["status"] == "PASS" else fail_fmt
+                ws_c.write(r, 0, row_idx + 1,                 cell_fmt)
+                ws_c.write(r, 1, row["initials"],             cell_fmt)
+                ws_c.write(r, 2, str(row["datetime"])[:16],   cell_fmt)
+                ws_c.write(r, 3, row["sst_value"],            cell_fmt)
+                ws_c.write(r, 4, row["status"],               fmt)
+
+            chart = workbook.add_chart({"type": "line"})
+            n_rows = len(df_h)
+            ref_lines = [
+                (mean+3*sd, "red",     "+3SD"),
+                (mean-3*sd, "red",     "-3SD"),
+                (mean+2*sd, "#e67e00", "+2SD"),
+                (mean-2*sd, "#e67e00", "-2SD"),
+                (mean+1*sd, "#60a5fa", "+1SD"),
+                (mean-1*sd, "#60a5fa", "-1SD"),
+                (mean,      "#16a34a", "Mean"),
+            ]
+            ref_col_start = 6
+            for i, (ref_val, color, ref_label) in enumerate(ref_lines):
+                col_i = ref_col_start + i
+                ws_c.write(3, col_i, ref_label, hdr_fmt)
+                for r in range(n_rows):
+                    ws_c.write(r + 4, col_i, ref_val, cell_fmt)
+                chart.add_series({
+                    "name":       ref_label,
+                    "categories": [safe_name, 4, 0, 3+n_rows, 0],
+                    "values":     [safe_name, 4, col_i, 3+n_rows, col_i],
+                    "line":       {"color": color, "width": 1.2, "dash_type": "dash"},
+                    "marker":     {"type": "none"},
+                })
+            chart.add_series({
+                "name":       "SST Value",
+                "categories": [safe_name, 4, 0, 3+n_rows, 0],
+                "values":     [safe_name, 4, 3, 3+n_rows, 3],
+                "line":       {"color": "#2563eb", "width": 1.5},
+                "marker":     {"type": "circle", "size": 6,
+                               "fill": {"color": "#2563eb"}, "border": {"color": "white"}},
+            })
+            chart.set_title({"name": f"L-J Chart — {hormone}"})
+            chart.set_x_axis({"name": "Run Number"})
+            chart.set_y_axis({"name": "SST Value"})
+            chart.set_legend({"position": "bottom"})
+            chart.set_size({"width": 720, "height": 400})
+            ws_c.insert_chart(n_rows + 6, 0, chart)
+
+        workbook.close()
+        return True, EXCEL_FILE
+    except Exception as e:
+        return False, str(e)
 
 def send_email_alert(to_email, initials, hormone, value, upper, lower,
                      smtp_server, smtp_port, sender_email, sender_password):
@@ -288,6 +416,9 @@ with st.sidebar:
             f"**{h}**  \n"
             f"`{lo:.3f} – {hi:.3f}`"
         )
+    st.markdown("## 💾 Excel on Desktop")
+    st.caption("Auto-saves to:")
+    st.code(EXCEL_FILE, language=None)
 
 # ═════════════════════════════════════════════════════════════════════════════
 #  TABS
@@ -359,6 +490,7 @@ with tab1:
         else:
             status, mean_v, sd_v, upper, lower = check_limits(hormone, sst_value)
             save_entry(hormone, initials.strip(), email_input.strip(), sst_value, status)
+            st.success(f"💾 Excel updated on Desktop: `QC_Charts_Made_Easier.xlsx`")
 
             if status == "PASS":
                 st.markdown(f"""
