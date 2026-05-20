@@ -45,7 +45,7 @@ st.markdown('<div class="main-header">QC Charts</div>', unsafe_allow_html=True)
 
 
 # Add your content sections below
-st.header("Sex Steroid Hormone Panel · Internal Quality Control System (testing)")
+st.header("Sex Steroid Hormone Panel · Internal Quality Control System")
 st.write("More features to elaborate on it")
 
 # ── Hormone acceptance limits (mean, SD) ────────────────────────────────
