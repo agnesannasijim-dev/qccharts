@@ -108,6 +108,12 @@ st.markdown("""
         font-weight: 600; font-size: 1rem;
         border-left: 5px solid #dc3545;
     }
+    .warn-box {
+        background: #fff3cd; color: #856404;
+        border-radius: 8px; padding: 14px 18px;
+        font-weight: 600; font-size: 1rem;
+        border-left: 5px solid #fd7e14;
+    }
     .stTabs [data-baseweb="tab-list"] {
         gap: 8px;
     }
@@ -148,13 +154,20 @@ def save_entry(hormone, initials, email, sst_value, status):
     return df                     # ← added: return updated df
 
 def check_limits(hormone, value):
-    lim   = HORMONE_LIMITS[hormone]
-    mean  = lim["mean"]
-    sd    = lim["sd"]
-    upper = mean + 2 * sd
-    lower = mean - 2 * sd
-    status = "PASS" if lower <= value <= upper else "FAIL"
-    return status, mean, sd, upper, lower
+    lim    = HORMONE_LIMITS[hormone]
+    mean   = lim["mean"]
+    sd     = lim["sd"]
+    upper2 = mean + 2 * sd
+    lower2 = mean - 2 * sd
+    upper3 = mean + 3 * sd
+    lower3 = mean - 3 * sd
+    if lower2 <= value <= upper2:
+        status = "PASS"
+    elif lower3 <= value <= upper3:
+        status = "WARNING"
+    else:
+        status = "FAIL"
+    return status, mean, sd, upper2, lower2
 
 def export_excel_to_desktop(df):
     try:
@@ -320,7 +333,12 @@ def plot_lj_chart(hormone, df_h):
         f"{row['initials']}  —  {pd.to_datetime(row['datetime']).strftime('%d %b %Y %H:%M')}"
         for _, row in df_h.iterrows()
     ]
-    colors = ["#dc3545" if s == "FAIL" else "#2563eb" for s in df_h["status"]]
+    colors = [
+        "#dc3545" if s == "FAIL"
+        else "#fd7e14" if s == "WARNING"
+        else "#2563eb"
+        for s in df_h["status"]
+    ]
 
     fig = go.Figure()
 
@@ -360,15 +378,21 @@ def plot_lj_chart(hormone, df_h):
     # Red X markers for failures
     fail_df = df_h[df_h["status"] == "FAIL"]
     if not fail_df.empty:
-        fail_x = [df_h.index.get_loc(i) if i in df_h.index else list(df_h.index).index(i)
-                  for i in fail_df.index]
         fig.add_trace(go.Scatter(
             x=[list(df_h.reset_index().index)[list(df_h.index).index(i)] for i in fail_df.index],
             y=fail_df["sst_value"],
             mode="markers",
             marker=dict(symbol="x", color="#dc3545", size=14, line=dict(width=2.5)),
-            name="FAIL",
-            hoverinfo="skip"
+            name="FAIL", hoverinfo="skip"
+        ))
+    warn_df = df_h[df_h["status"] == "WARNING"]
+    if not warn_df.empty:
+        fig.add_trace(go.Scatter(
+            x=[list(df_h.reset_index().index)[list(df_h.index).index(i)] for i in warn_df.index],
+            y=warn_df["sst_value"],
+            mode="markers",
+            marker=dict(symbol="x", color="#fd7e14", size=14, line=dict(width=2.5)),
+            name="WARNING", hoverinfo="skip"
         ))
 
     fig.update_layout(
@@ -492,7 +516,7 @@ with tab1:
             save_entry(hormone, initials.strip(), email_input.strip(), sst_value, status)
             st.success(f"💾 Excel updated on Desktop: `QC_Charts_Made_Easier.xlsx`")
 
-            if status == "PASS":
+     if status == "PASS":
                 st.markdown(f"""
                 <div class="pass-box">
                     ✅  PASS &nbsp;—&nbsp; {hormone} &nbsp;|&nbsp;
@@ -501,14 +525,34 @@ with tab1:
                 </div>
                 """, unsafe_allow_html=True)
                 st.balloons()
+            elif status == "WARNING":
+                st.markdown(f"""
+                <div class="warn-box">
+                    ⚠️  WARNING &nbsp;—&nbsp; {hormone} &nbsp;|&nbsp;
+                    Value: {sst_value} &nbsp;|&nbsp;
+                    Between ±2SD and ±3SD ({lower:.4f} – {upper:.4f})
+                </div>
+                """, unsafe_allow_html=True)
             else:
                 st.markdown(f"""
                 <div class="fail-box">
                     ❌  FAIL &nbsp;—&nbsp; {hormone} &nbsp;|&nbsp;
                     Value: {sst_value} &nbsp;|&nbsp;
-                    Outside ±2SD ({lower:.4f} – {upper:.4f})
+                    Outside ±3SD ({lower:.4f} – {upper:.4f})
                 </div>
                 """, unsafe_allow_html=True)
+                if email_enabled:
+                    result = send_email_alert(
+                        email_input.strip(), initials.strip().upper(),
+                        hormone, sst_value, upper, lower,
+                        smtp_server, smtp_port, sender_email, sender_pass
+                    )
+                    if result is True:
+                        st.info(f"📧 Alert email sent to **{email_input}**")
+                    else:
+                        st.warning(f"📧 Email could not be sent: {result}")
+                else:
+                    st.warning("📧 Email alerts are disabled. Configure SMTP in the sidebar.")
 
                 if email_enabled:
                     result = send_email_alert(
@@ -613,6 +657,8 @@ with tab3:
         def style_status(val):
             if val == "PASS":
                 return "background-color: #d4edda; color: #155724; font-weight: 600"
+            elif val == "WARNING":
+                return "background-color: #fff3cd; color: #856404; font-weight: 600"
             elif val == "FAIL":
                 return "background-color: #f8d7da; color: #721c24; font-weight: 600"
             return ""
