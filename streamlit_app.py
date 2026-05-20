@@ -516,13 +516,13 @@ with tab1:
             save_entry(hormone, initials.strip(), email_input.strip(), sst_value, status)
             st.success(f"💾 Excel updated on Desktop: `QC_Charts_Made_Easier.xlsx`")
 
-     if status == "PASS":
-            st.markdown(f"""
-            <div class="pass-box">
-                 ✅  PASS &nbsp;—&nbsp; {hormone} &nbsp;|&nbsp;
-                Value: {sst_value} &nbsp;|&nbsp;
-                 Within ±2SD ({lower:.4f} – {upper:.4f})
-            </div>
+            if status == "PASS":        # ← 12 spaces — correct
+                st.markdown(f"""
+                <div class="pass-box">
+                    ✅  PASS &nbsp;—&nbsp; {hormone} &nbsp;|&nbsp;
+                    Value: {sst_value} &nbsp;|&nbsp;
+                    Within ±2SD ({lower:.4f} – {upper:.4f})
+                </div>
                 """, unsafe_allow_html=True)
                 st.balloons()
             elif status == "WARNING":
