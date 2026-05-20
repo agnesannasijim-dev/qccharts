@@ -517,12 +517,12 @@ with tab1:
             st.success(f"💾 Excel updated on Desktop: `QC_Charts_Made_Easier.xlsx`")
 
      if status == "PASS":
-                st.markdown(f"""
-                <div class="pass-box">
-                    ✅  PASS &nbsp;—&nbsp; {hormone} &nbsp;|&nbsp;
-                    Value: {sst_value} &nbsp;|&nbsp;
-                    Within ±2SD ({lower:.4f} – {upper:.4f})
-                </div>
+            st.markdown(f"""
+            <div class="pass-box">
+                 ✅  PASS &nbsp;—&nbsp; {hormone} &nbsp;|&nbsp;
+                Value: {sst_value} &nbsp;|&nbsp;
+                 Within ±2SD ({lower:.4f} – {upper:.4f})
+            </div>
                 """, unsafe_allow_html=True)
                 st.balloons()
             elif status == "WARNING":
@@ -553,20 +553,6 @@ with tab1:
                         st.warning(f"📧 Email could not be sent: {result}")
                 else:
                     st.warning("📧 Email alerts are disabled. Configure SMTP in the sidebar.")
-
-                if email_enabled:
-                    result = send_email_alert(
-                        email_input.strip(), initials.strip().upper(),
-                        hormone, sst_value, upper, lower,
-                        smtp_server, smtp_port, sender_email, sender_pass
-                    )
-                    if result is True:
-                        st.info(f"📧 Alert email sent to **{email_input}**")
-                    else:
-                        st.warning(f"📧 Email could not be sent: {result}")
-                else:
-                    st.warning("📧 Email alerts are disabled. Configure SMTP in the sidebar.")
-
             # Entry summary
             st.markdown("---")
             c1, c2, c3, c4, c5 = st.columns(5)
