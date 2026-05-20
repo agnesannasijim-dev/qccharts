@@ -12,7 +12,7 @@ from email.mime.multipart import MIMEMultipart
 
 # Page configuration
 st.set_page_config(
-    page_title="QC Charts Made Easier",
+    page_title="QC Charts Made Easier (testing)",
     page_icon="",
     layout="wide",
     initial_sidebar_state="expanded"
