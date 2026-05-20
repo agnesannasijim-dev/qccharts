@@ -12,7 +12,7 @@ from email.mime.multipart import MIMEMultipart
 
 # Page configuration
 st.set_page_config(
-    page_title="QC Charts Made Easier (testing)",
+    page_title="QC Charts Made Easier",
     page_icon="",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -45,7 +45,7 @@ st.markdown('<div class="main-header">QC Charts</div>', unsafe_allow_html=True)
 
 
 # Add your content sections below
-st.header("Sex Steroid Hormone Panel · Internal Quality Control System")
+st.header("Sex Steroid Hormone Panel · Internal Quality Control System (testing)")
 st.write("More features to elaborate on it")
 
 # ── Hormone acceptance limits (mean, SD) ────────────────────────────────
