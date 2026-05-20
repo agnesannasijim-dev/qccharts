@@ -67,7 +67,9 @@ HORMONE_LIMITS = {
     "Testosterone":                    {"mean": 8762589,  "sd": 1004209},
 }
 
-DATA_FILE = "qc_data_personal.csv"
+import pathlib
+BASE_DIR = pathlib.Path(__file__).parent
+DATA_FILE = str(BASE_DIR / "qc_data_personal.csv")
 
 # ── Custom CSS ─────────────────────────────────────────────────────────────────
 st.markdown("""
